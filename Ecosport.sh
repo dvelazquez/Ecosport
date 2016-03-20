@@ -1,14 +1,14 @@
 #!/bin/ash
-# To avoid cross compiling
-# will write all functions in bash
+# To avoid cross compiling will write all functions in bash
 # Daniel Velazquez - March 2016
 # OpenSource
-# Testing Github
+
 
 # Define Inputs and Outputs
   IgnitionPin=26
-  CourtesyLightsPin=13
+  CourtesyLightsInputPin=13
   LightSensorPin=8
+  CountesyLightsOutputPin=0
 
 #Initialize variables
   CourtesyLightsCounter=1
@@ -17,8 +17,8 @@
   echo $IgnitionCounter
 
 
- while [ "$IgnitionCounter" -lt "150" ] 
-#  while true
+#  while [ "$IgnitionCounter" -lt "150" ] 
+  while true
   do
 	# Courtesy Lights Input Counter
 	CourtesyLights=$(fast-gpio read $CourtesyLightsPin)
@@ -34,17 +34,15 @@
 
 	# Light Sensor Counter
 	LightSensor=$(fast-gpio read $LightSensorPin)
+	echo $LightSensor
 	LightSensorState=${LightSensor:14:14}
+	echo $LightSensorState
 	LightSensorCounter=$((LightSensorCounter+LightSensorState))
 	echo "LightSensor Counter:" $LightSensorCounter
 
 	echo " "
+done
 
-
-  done
-
-# Read if Ignition is High and keep feet lights at 5%, if Ignition Low feet light follows Courtesy Lights
-# fast-gpio read X
 
 # If Ignition is Low reduce current consumption by turning WiFi Off periodically
 
