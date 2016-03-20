@@ -3,6 +3,7 @@
 # will write all functions in bash
 # Daniel Velazquez - March 2016
 # OpenSource
+# Testing Github
 
 # Define Inputs and Outputs
   IgnitionPin=26
