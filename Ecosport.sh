@@ -21,7 +21,7 @@
   CourtesyLightsTrigger=Low	# Starts with Courtesy Lights Off
   IgnitionTrigger=Low		# Starts with Ignition OFF
   LightSensorTrigger=High	# Starts with Light Sensor is OFF (Bright / Headlamps Off)
-  Limit=30
+  Limit=10
   
 
 Function_CourtesyLights()
@@ -40,7 +40,7 @@ Function_CourtesyLights()
 		CourtesyLightsCounter=$Limit				# Keep counter up to Limit
 		CourtesyLightsTrigger=High
 	fi	
-	if [ "$CourtesyLightsCounter" -eq "0" ]
+	if [ "$CourtesyLightsCounter" -le "0" ]
 	  then
 		CourtesyLightsCounter=0					# Keep counter down to Zero
 		CourtesyLightsTrigger=Low
@@ -65,7 +65,7 @@ Function_Ignition()
 		IgnitionCounter=$Limit				# Keep counter up to Limit
 		IgnitionTrigger=High
 	fi	
-	if [ "$IgnitionCounter" -eq "0" ]
+	if [ "$IgnitionCounter" -le "0" ]
 	  then
 		IgnitionCounter=0					# Keep counter down to Zero
 		IgnitionTrigger=Low
@@ -90,7 +90,7 @@ Function_LightSensor()
 		LightSensorCounter=$Limit				# Keep counter up to Limit
 		LightSensorTrigger=High
 	fi	
-	if [ "$LightSensorCounter" -eq "0" ]
+	if [ "$LightSensorCounter" -le "0" ]
 	  then
 		LightSensorCounter=0					# Keep counter down to Zero
 		LightSensorTrigger=Low
@@ -118,10 +118,12 @@ while true
 	  then
 		# When Car is ON and Lights OFF then Lights at 5%
 		echo "The Car is ON"
+		fast-gpio set 16 0
 		# When Car is ON and Lights ON then Lights at 100% (or something)
 	  else
 		# When Car is OFF reduce current consumption
 		echo "The Car is OFF"
+		fast-gpio set 16 1
 	fi
 
 	# Check Courtesy Lights Input Trigger Levels
@@ -137,19 +139,20 @@ while true
 	fi
 
 	# Check Lights Sensor Trigger Levels
-	if [ "$LightSensorTrigger" = "High" ]		# Sensor pulls low when lighted
+	if [ "$LightSensorTrigger" = "Low" ]		# Sensor pulls low when lighted
 	  then
 		# What to do when is day time
 		echo "Sun is bright"
-		fast-gpio set 20 0			# Turn OFF Head Lamps
+		fast-gpio set 15 1			# Turn OFF Head Lamps
 	  else
 		# What to do when is night time
 		echo "Is night time or dark"
-		fast-gpio set 20 1			# Turn ON Head Lamps
+		fast-gpio set 15 0			# Turn ON Head Lamps
 	fi
 
 	echo $IgnitionCounter
-	
+	#sleep 1	
+	clear
 done
 
 
