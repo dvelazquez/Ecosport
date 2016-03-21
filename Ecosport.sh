@@ -18,9 +18,9 @@
   CourtesyLightsCounter=1
   IgnitionCounter=1
   LightSensorCounter=1
-  CourtesyLightsTrigger=Low
-  IgnitionTrigger=Low
-  LightSensorTrigger=Low
+  CourtesyLightsTrigger=Low	# Starts with Courtesy Lights Off
+  IgnitionTrigger=Low		# Starts with Ignition OFF
+  LightSensorTrigger=High	# Starts with Light Sensor is OFF (Bright / Headlamps Off)
   Limit=30
   
 
@@ -129,12 +129,24 @@ while true
 	  then
 		# What to do when Courtesy Lights are ON
 		echo "Courtesy Lights are ON"
+		fast-gpio pwm 0 100 100			# Max duty cycle (confirm good visibility)
 	  else
 		# What to do when Courtesy Lights are OFF
 		echo "Courtesy Lights are OFF"
+		fast-gpio pwm 0 100 5			# Min duty cycle when all lights OFF (confirm good visibility)
 	fi
 
-
+	# Check Lights Sensor Trigger Levels
+	if [ "$LightSensorTrigger" = "High" ]		# Sensor pulls low when lighted
+	  then
+		# What to do when is day time
+		echo "Sun is bright"
+		fast-gpio set 20 0			# Turn OFF Head Lamps
+	  else
+		# What to do when is night time
+		echo "Is night time or dark"
+		fast-gpio set 20 1			# Turn ON Head Lamps
+	fi
 
 	echo $IgnitionCounter
 	
