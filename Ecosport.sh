@@ -7,40 +7,137 @@
 # Define Inputs and Outputs
   IgnitionPin=26
   CourtesyLightsInputPin=13
+  CourtesyLightsOutputPin=0
   LightSensorPin=8
-  CountesyLightsOutputPin=0
+  OpenDoorOutputPin=19
+  CloseDoorOutputPin=18
+  HeadlampOutputPin=20
+
 
 #Initialize variables
   CourtesyLightsCounter=1
   IgnitionCounter=1
   LightSensorCounter=1
-  echo $IgnitionCounter
-  echo "Aqui"
+  CourtesyLightsTrigger=Low
+  IgnitionTrigger=Low
+  LightSensorTrigger=Low
+  Limit=30
+  
 
-while [ "$IgnitionCounter" -lt "30" ] 
-#while true
-  do
+Function_CourtesyLights()
+{
 	# Courtesy Lights Input Counter
 	CourtesyLights=$(fast-gpio read $CourtesyLightsInputPin)
 	CourtesyLightsState=${CourtesyLights:14:14}
-	CourtesyLightsCounter=$((CourtesyLightsCounter+CourtesyLightsState))
-	echo "Courtesy Lights Counter:" $CourtesyLightsCounter
+	if [ "$CourtesyLightsState" -eq "1" ]
+	  then
+		CourtesyLightsCounter=$((CourtesyLightsCounter+CourtesyLightsState))	# Sum 1 until Limit
+	  else
+		CourtesyLightsCounter=$((CourtesyLightsCounter-1))			# Rest 1 until Zero
+	fi
+	if [ "$CourtesyLightsCounter" -ge "$Limit" ]
+	  then
+		CourtesyLightsCounter=$Limit				# Keep counter up to Limit
+		CourtesyLightsTrigger=High
+	fi	
+	if [ "$CourtesyLightsCounter" -eq "0" ]
+	  then
+		CourtesyLightsCounter=0					# Keep counter down to Zero
+		CourtesyLightsTrigger=Low
+	fi
+	echo "Courtesy Lights Counter:" $CourtesyLightsCounter		# For debugging show me the Counter
+	echo "Courtesy Lights Trigger:" $CourtesyLightsTrigger		# and show me trigger value
+}
 
+Function_Ignition()
+{
 	# Ignition Pin Input Counter
 	Ignition=$(fast-gpio read $IgnitionPin)
 	IgnitionState=${Ignition:14:14}
-	IgnitionCounter=$((IgnitionCounter+IgnitionState))
-	echo "Ignition Counter:" $IgnitionCounter
+	if [ "$IgnitionState" -eq "1" ]
+	  then
+		IgnitionCounter=$((IgnitionCounter+IgnitionState))	# Sum 1 until Limit
+	  else
+		IgnitionCounter=$((IgnitionCounter-1))			# Rest 1 until Zero
+	fi
+	if [ "$IgnitionCounter" -ge "$Limit" ]
+	  then
+		IgnitionCounter=$Limit				# Keep counter up to Limit
+		IgnitionTrigger=High
+	fi	
+	if [ "$IgnitionCounter" -eq "0" ]
+	  then
+		IgnitionCounter=0					# Keep counter down to Zero
+		IgnitionTrigger=Low
+	fi
+	echo "Ignition Counter:" $IgnitionCounter		# For debugging show me the Counter
+	echo "Ignition Trigger:" $IgnitionTrigger		# and show me trigger value
+}
 
+Function_LightSensor()
+{
 	# Light Sensor Counter
 	LightSensor=$(fast-gpio read $LightSensorPin)
-	echo $LightSensor
 	LightSensorState=${LightSensor:14:14}
-	echo $LightSensorState
-	LightSensorCounter=$((LightSensorCounter+LightSensorState))
-	echo "LightSensor Counter:" $LightSensorCounter
+	if [ "$LightSensorState" -eq "1" ]
+	  then
+		LightSensorCounter=$((LightSensorCounter+LightSensorState))	# Sum 1 until Limit
+	  else
+		LightSensorCounter=$((LightSensorCounter-1))			# Rest 1 until Zero
+	fi
+	if [ "$LightSensorCounter" -ge "$Limit" ]
+	  then
+		LightSensorCounter=$Limit				# Keep counter up to Limit
+		LightSensorTrigger=High
+	fi	
+	if [ "$LightSensorCounter" -eq "0" ]
+	  then
+		LightSensorCounter=0					# Keep counter down to Zero
+		LightSensorTrigger=Low
+	fi
+	echo "Light Sensor Counter:" $LightSensorCounter		# For debugging show me the Counter
+	echo "Light Sensor Trigger:" $LightSensorTrigger		# and show me trigger value
+}
 
-	echo " "
+
+
+## Here is the main loop of the program, above is the same function per pin
+## to do: use one function for all inputs
+
+#while [ "$IgnitionCounter" -lt "50" ] 
+while true
+  do
+	Function_CourtesyLights
+	Function_Ignition
+	Function_LightSensor
+
+
+	# Now with the Trigger Levels "filtered" by a second, do something:
+	# Check Ignition Trigger Levels
+	if [ "$IgnitionTrigger" = "Low" ]
+	  then
+		# When Car is ON and Lights OFF then Lights at 5%
+		echo "The Car is ON"
+		# When Car is ON and Lights ON then Lights at 100% (or something)
+	  else
+		# When Car is OFF reduce current consumption
+		echo "The Car is OFF"
+	fi
+
+	# Check Courtesy Lights Input Trigger Levels
+	if [ "$CourtesyLightsTrigger" = "Low" ]
+	  then
+		# What to do when Courtesy Lights are ON
+		echo "Courtesy Lights are ON"
+	  else
+		# What to do when Courtesy Lights are OFF
+		echo "Courtesy Lights are OFF"
+	fi
+
+
+
+	echo $IgnitionCounter
+	
 done
 
 
