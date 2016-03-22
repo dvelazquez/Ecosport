@@ -19,10 +19,10 @@
   IgnitionCounter=1
   LightSensorCounter=1
   CourtesyLightsTrigger=Low	# Starts with Courtesy Lights Off
-  IgnitionTrigger=Low		# Starts with Ignition OFF
+  IgnitionTrigger=High		# Starts with Ignition OFF
   LightSensorTrigger=High	# Starts with Light Sensor is OFF (Bright / Headlamps Off)
   Limit=10
-  
+  Toggle=OFF  
 
 Function_CourtesyLights()
 {
@@ -118,12 +118,23 @@ while true
 	  then
 		# When Car is ON and Lights OFF then Lights at 5%
 		echo "The Car is ON"
-		fast-gpio set 16 0
+		Toggle=ON
+		echo "Toggle at ON" $Toggle
 		# When Car is ON and Lights ON then Lights at 100% (or something)
 	  else
 		# When Car is OFF reduce current consumption
 		echo "The Car is OFF"
-		fast-gpio set 16 1
+		fast-gpio set 20 0		# keep headlamps off
+		if [ "$Toggle" = "ON" ]
+		  then
+		    ./Open.sh
+	   	    Toggle=OFF
+		    #echo "Porque NO lLega hasta aqui?"
+		    #sleep 2
+		fi
+		Toggle=OFF
+		echo "Toggle at OFF" $Toggle
+
 	fi
 
 	# Check Courtesy Lights Input Trigger Levels
@@ -138,16 +149,20 @@ while true
 		fast-gpio pwm 0 100 5			# Min duty cycle when all lights OFF (confirm good visibility)
 	fi
 
-	# Check Lights Sensor Trigger Levels
-	if [ "$LightSensorTrigger" = "Low" ]		# Sensor pulls low when lighted
+	# Check Lights Sensor Trigger Levels and Ignition is ON
+	if [ "$LightSensorTrigger" = "Low" ] && [ "$IgnitionTrigger" = "Low" ]		# Sensor pulls low when lighted
 	  then
 		# What to do when is day time
 		echo "Sun is bright"
-		fast-gpio set 15 1			# Turn OFF Head Lamps
+		fast-gpio set 20 0			# Turn OFF Head Lamps
+		
 	  else
 		# What to do when is night time
 		echo "Is night time or dark"
-		fast-gpio set 15 0			# Turn ON Head Lamps
+		if [ "$IgnitionTrigger" = "Low" ]
+		  then
+			fast-gpio set 20 1			# Turn ON Head Lamps
+		fi
 	fi
 
 	echo $IgnitionCounter
