@@ -114,7 +114,7 @@ while true
 
 	# Now with the Trigger Levels "filtered" by a second, do something:
 	# Check Ignition Trigger Levels
-	if [ "$IgnitionTrigger" = "Low" ]
+	if [ "$IgnitionTrigger" = "Low" ] # I/O pins is low when Ignition is High
 	  then
 		# When Car is ON and Lights OFF then Lights at 5%
 		echo "The Car is ON"
@@ -129,12 +129,9 @@ while true
 		  then
 		    ./Open.sh
 	   	    Toggle=OFF
-		    #echo "Porque NO lLega hasta aqui?"
 		    #sleep 2
 		fi
 		Toggle=OFF
-		echo "Toggle at OFF" $Toggle
-
 	fi
 
 	# Check Courtesy Lights Input Trigger Levels
