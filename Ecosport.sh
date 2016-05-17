@@ -117,19 +117,19 @@ while true
 	if [ "$IgnitionTrigger" = "Low" ] # I/O pins is low when Ignition is High
 	  then
 		# When Car is ON and Lights OFF then Lights at 5%
-		echo "The Car is ON"
+		echo -e "Ignition ON \t" $(date) >> Log
 		Toggle=ON
 		echo "Toggle at ON" $Toggle
 		# When Car is ON and Lights ON then Lights at 100% (or something)
 	  else
 		# When Car is OFF reduce current consumption
-		echo "The Car is OFF"
 		fast-gpio set 20 0		# keep headlamps off
 		if [ "$Toggle" = "ON" ]
 		  then
 		    ./Open.sh
 	   	    Toggle=OFF
 		    #sleep 2
+		    echo -e "Ignition OFF \t" $(date) >> Log
 		fi
 		Toggle=OFF
 	fi
@@ -138,11 +138,11 @@ while true
 	if [ "$CourtesyLightsTrigger" = "Low" ]
 	  then
 		# What to do when Courtesy Lights are ON
-		echo "Courtesy Lights are ON"
+		#echo -e "Courtesy Lights ON \t" $(date) >> Log
 		fast-gpio pwm 0 100 100			# Max duty cycle (confirm good visibility)
 	  else
 		# What to do when Courtesy Lights are OFF
-		echo "Courtesy Lights are OFF"
+		#echo -e "Courtesy Lights OFF \t" $(date) >> Log
 		fast-gpio pwm 0 100 5			# Min duty cycle when all lights OFF (confirm good visibility)
 	fi
 
@@ -150,12 +150,12 @@ while true
 	if [ "$LightSensorTrigger" = "Low" ] && [ "$IgnitionTrigger" = "Low" ]		# Sensor pulls low when lighted
 	  then
 		# What to do when is day time
-		echo "Sun is bright"
+		echo -e "LightSensor OFF \t" $(date) >> Log
 		fast-gpio set 20 0			# Turn OFF Head Lamps
 		
 	  else
 		# What to do when is night time
-		echo "Is night time or dark"
+		#echo -e "LightSensor ON \t" $(date) >> Log
 		if [ "$IgnitionTrigger" = "Low" ]
 		  then
 			fast-gpio set 20 1			# Turn ON Head Lamps
